@@ -1,0 +1,47 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.4.2'
+    id 'io.spring.dependency-management' version '1.0.11.RELEASE'
+
+}
+
+group 'org.tsds'
+version '1.1'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation("org.sql2o:sql2o:1.6.0")
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.6.0'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine'
+    runtimeOnly compileOnly("org.springframework.boot:spring-boot-devtools")
+    runtimeOnly 'org.postgresql:postgresql'
+
+}
+
+bootJar {
+    launchScript()
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task createBundle(type: Copy) {
+    group "build"
+    dependsOn(assemble)
+    from 'run.sh', "$buildDir/libs/${jar.getArchiveFileName().get()}", 'application.properties'
+    into "$buildDir/bundle"
+}
+
+task createDistribution(type: Zip, description: 'Create distributable app') {
+    group "build"
+    dependsOn(tasks.createBundle)
+    from "$buildDir/bundle"
+    archiveFileName = "${project.name}.zip"
+    destinationDirectory = file("$buildDir/distrib")
+}
+
